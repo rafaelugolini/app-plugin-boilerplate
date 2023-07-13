@@ -5,7 +5,7 @@
 
 // Set UI for the "Send" screen.
 // EDIT THIS: Adapt / remove this function to your needs.
-static void set_send_ui(ethQueryContractUI_t *msg) {
+static bool set_send_ui(ethQueryContractUI_t *msg) {
     strlcpy(msg->title, "Send", msg->titleLength);
 
     const uint8_t *eth_amount = msg->pluginSharedRO->txContent->value.value;
@@ -13,12 +13,21 @@ static void set_send_ui(ethQueryContractUI_t *msg) {
 
     // Converts the uint256 number located in `eth_amount` to its string representation and
     // copies this to `msg->msg`.
-    amountToString(eth_amount, eth_amount_size, WEI_TO_ETHER, "ETH", msg->msg, msg->msgLength);
+    if (!amountToString(eth_amount,
+                        eth_amount_size,
+                        WEI_TO_ETHER,
+                        "ETH",
+                        msg->msg,
+                        msg->msgLength)) {
+        return false;
+    }
+
+    return true;
 }
 
 // Set UI for "Receive" screen.
 // EDIT THIS: Adapt / remove this function to your needs.
-static void set_receive_ui(ethQueryContractUI_t *msg, const context_t *context) {
+static bool set_receive_ui(ethQueryContractUI_t *msg, const context_t *context) {
     strlcpy(msg->title, "Receive Min.", msg->titleLength);
 
     uint8_t decimals = context->decimals;
@@ -30,17 +39,21 @@ static void set_receive_ui(ethQueryContractUI_t *msg, const context_t *context) 
         ticker = msg->network_ticker;
     }
 
-    amountToString(context->amount_received,
-                   sizeof(context->amount_received),
-                   decimals,
-                   ticker,
-                   msg->msg,
-                   msg->msgLength);
+    if (!amountToString(context->amount_received,
+                        sizeof(context->amount_received),
+                        decimals,
+                        ticker,
+                        msg->msg,
+                        msg->msgLength)) {
+        return false;
+    }
+
+    return true;
 }
 
 // Set UI for "Beneficiary" screen.
 // EDIT THIS: Adapt / remove this function to your needs.
-static void set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
+static bool set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
     strlcpy(msg->title, "Beneficiary", msg->titleLength);
 
     // Prefix the address with `0x`.
@@ -53,16 +66,21 @@ static void set_beneficiary_ui(ethQueryContractUI_t *msg, context_t *context) {
 
     // Get the string representation of the address stored in `context->beneficiary`. Put it in
     // `msg->msg`.
-    getEthAddressStringFromBinary(
-        context->beneficiary,
-        msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
-        msg->pluginSharedRW->sha3,
-        chainid);
+    if (!getEthAddressStringFromBinary(
+            context->beneficiary,
+            msg->msg + 2,  // +2 here because we've already prefixed with '0x'.
+            msg->pluginSharedRW->sha3,
+            chainid)) {
+        return false;
+    }
+
+    return true;
 }
 
 void handle_query_contract_ui(void *parameters) {
     ethQueryContractUI_t *msg = (ethQueryContractUI_t *) parameters;
     context_t *context = (context_t *) msg->pluginContext;
+    bool fn_status = false;
 
     // msg->title is the upper line displayed on the device.
     // msg->msg is the lower line displayed on the device.
@@ -76,18 +94,22 @@ void handle_query_contract_ui(void *parameters) {
     // EDIT THIS: Adapt the cases for the screens you'd like to display.
     switch (msg->screenIndex) {
         case 0:
-            set_send_ui(msg);
+            fn_status = set_send_ui(msg);
             break;
         case 1:
-            set_receive_ui(msg, context);
+            fn_status = set_receive_ui(msg, context);
             break;
         case 2:
-            set_beneficiary_ui(msg, context);
+            fn_status = set_beneficiary_ui(msg, context);
             break;
         // Keep this
         default:
             PRINTF("Received an invalid screenIndex\n");
             msg->result = ETH_PLUGIN_RESULT_ERROR;
             return;
+    }
+
+    if (!fn_status) {
+        msg->result = ETH_PLUGIN_RESULT_ERROR;
     }
 }
