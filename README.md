@@ -31,22 +31,9 @@ You can see that this [CI](https://github.com/LedgerHQ/app-plugin-boilerplate/bl
 verifies that the SDK used is either on the latest `master` or `develop` references. This ensures
 the code is compiled and tested on the latest version of the SDK.
 
-## Smart Contracts
+## Documentation
 
-Smart contracts covered by the plugin shall be described here:
-
-|  Network | Version | Smart Contract | Address |
-|   ----   |   ---   |      ----      |   ---   |
-| NetworkName   | VX  | ContractName  | `0x0000000000000000000000000000000000000000` |
-
-## Functions
-
-For the smart contracts implemented, the functions covered by the plugin shall be described here:
-
-|Contract |    Function   | Selector  | Displayed Parameters |
-|   ---   |    ---        | ---       | --- |
-|ContractName  | FunctionName           | `0x00000000`| <table><tbody> <tr><td><code>type ParameterName</code></td></tr> </tbody></table> |
-
+The documentation about the plugin shall be added in [PLUGIN_SPECIFICATON.md](https://github.com/LedgerHQ/app-plugin-boilerplate/blob/develop/PLUGIN_SPECIFICATON.md). It shall includes at least the smart contracts and functions supported by the plugin.
 
 ## Formatting
 
